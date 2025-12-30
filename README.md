@@ -25,5 +25,5 @@ int main() {
     return 0;
 }
 
-編譯時用mingw64的編譯器:
+編譯時用mingw64:
 g++ -std=c++17 "你的程式".cpp rsa.cpp -lgmpxx -lgmp -o "執行檔名稱" (編譯時需執行rsa.cpp，rsa功能實作在裡面)
