@@ -1,6 +1,46 @@
 # CryptographyTeam8
+本系統採用 **互動式選單 (Interactive Menu)** 設計，並自動管理 `data/` 資料夾。執行 `main.exe` (或 `hybrid_system.exe`) 後，請依以下步驟操作。
+
+0. 前置準備
+* 程式啟動後，會自動在根目錄建立 `data/` 資料夾。
+* **注意：** 所有欲加密的原始檔案（如圖片、文字檔），請務必先手動放入 `data/` 資料夾中，程式才能讀取。
+
+1. 初始設定：生成 RSA 金鑰
+首次使用必須先產生 RSA 公私鑰對。
+1. 在主選單選擇 `1` (生成新 RSA 金鑰)。
+2. 輸入欲儲存的金鑰檔名 (例如 `alice_key.txt`)；若直接按 Enter，則使用預設值 `rsa_keypair.txt`。
+3. 系統顯示 `[成功]` 後，金鑰檔案會產生於 `data/` 目錄下。
+
+2. 加密流程範例 (Sender Role)
+假設你要加密一張名為 `test.jpg` 的圖片：
+1. 在主選單選擇 `3` (加密檔案)。
+2. **輸入原始檔名**：輸入 `test.jpg` (若忘記檔名，可輸入 `?` 查看 `data/` 目錄下的檔案列表)。
+3. **輸入輸出檔名**：設定加密後的檔名，例如 `secret.serpent` (直接按 Enter 會使用預設值)。
+4. **輸入金鑰檔名**：設定 Session Key 的儲存檔名，例如 `session.key`。
+5. 系統會自動執行：
+   * 生成 256-bit 隨機 Session Key。
+   * 使用 RSA 公鑰加密 Session Key -> 存檔。
+   * 使用 Session Key + Serpent 演算法加密檔案 -> 存檔。
+
+3. 解密流程範例 (Receiver Role)
+假設你收到了一個加密檔 `secret.serpent` 和金鑰檔 `session.key`：
+1. 確保這兩個檔案都在 `data/` 資料夾內。
+2. 確保你已經載入正確的 RSA 金鑰 (可使用選單 `2` 載入)。
+3. 在主選單選擇 `4` (解密檔案)。
+4. **輸入加密檔名**：輸入 `secret.serpent`。
+5. **輸入金鑰檔名**：輸入 `session.key`。
+6. **輸入輸出檔名**：輸入解密後要存成的檔名，例如 `restored.jpg`。
+7. 系統顯示 `[成功] 解密完成` 後，即可至 `data/` 資料夾查看還原的檔案。
+
+### 💡 小技巧 (Tips)
+* **查詢檔案**：在任何需要輸入檔名的步驟，輸入 `?` 並按 Enter，系統會列出目前 `data/` 資料夾內的所有檔案，方便複製檔名。
+* **多金鑰管理**：你可以生成多組不同名稱的金鑰 (如 `key_A.txt`, `key_B.txt`)，並透過選單 `2` 切換當前使用的身份。
+
+以下是基本資訊
+______________________________________________________________________________________________________________
 RSA用法範例:
 
+```cpp
 #include <iostream>
 #include "rsa.hpp"   
 
@@ -26,7 +66,7 @@ int main() {
 }
 
 編譯時用mingw64:
-g++ -std=c++17 "你的程式".cpp rsa.cpp -lgmpxx -lgmp -o "執行檔名稱" (編譯時需執行rsa.cpp，rsa功能實作在裡面)
+g++ -std=c++17 你的檔案名稱.cpp modules/rsa.cpp modules/serpent.cpp -lgmpxx -lgmp -o 輸出檔案名稱.exe (編譯時需執行rsa.cpp，rsa功能實作在裡面)
 ______________________________________________________________________________________________________________
 
 serpent對稱加密使用範例:
@@ -39,3 +79,12 @@ step 2 :cipher.encryptFile("原始檔案.jpg", "加密檔.serpent");
 step 3 :cipher.decryptFile("加密檔.serpent", "還原檔案.jpg");
 
 我有附上一個test.cpp來測試RSA和SERPENT的功能是否正常，可以試試
+g++ -std=c++17 test.cpp modules/rsa.cpp modules/serpent.cpp -lgmpxx -lgmp -o test_suite.exe
+
+檢測steps
+step 1 :執行 test_suite.exe。
+
+step 2 :程式會自動在 data/ 資料夾中生成測試檔、RSA 金鑰交換、並進行加解密驗證。
+
+step 3 :若顯示「混合加密系統測試完全成功」，代表所有模組運作正常
+______________________________________________________________________________________________________________
