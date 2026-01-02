@@ -35,7 +35,7 @@
 ### 💡 小技巧 (Tips)
 * **查詢檔案**：在任何需要輸入檔名的步驟，輸入 `?` 並按 Enter，系統會列出目前 `data/` 資料夾內的所有檔案，方便複製檔名。
 * **多金鑰管理**：你可以生成多組不同名稱的金鑰 (如 `key_A.txt`, `key_B.txt`)，並透過選單 `2` 切換當前使用的身份。
-編譯指令:g++ -std=c++17 main.cpp modules/rsa.cpp modules/serpent.cpp modules/SHA256.cpp -lgmpxx -lgmp -o 輸出檔案名稱.exe
+* 編譯指令:g++ -std=c++17 main.cpp modules/rsa.cpp modules/serpent.cpp modules/SHA256.cpp -lgmpxx -lgmp -o 輸出檔案名稱.exe。
 以下是基本資訊
 ______________________________________________________________________________________________________________
 RSA用法範例:
