@@ -1,3 +1,0 @@
-This is message.
-We are Team8!
-Our job is combing RSA with Serpent.

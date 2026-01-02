@@ -4,8 +4,10 @@
 #include <vector>
 #include <filesystem> 
 #include <fstream>
+#include <chrono>   // 用於效能計時
 
 // 引入 modules 資料夾下的標頭檔
+#include "modules/SHA256.h"
 #include "modules/rsa.hpp"
 #include "modules/serpent.hpp"
 
@@ -48,6 +50,40 @@ void listDataFiles() {
         }
     }
     cout << "\n--------------------------" << endl;
+}
+
+// --- 成員 D 負責：SHA-256 檔案雜湊功能 ---
+void hashFile(string filePath) {
+    SHA256 sha;
+    // 考慮到 main 的 DATA_DIR，這裡補上路徑
+    string fullPath = DATA_DIR + filePath;
+    ifstream file(fullPath, ios::binary | ios::ate); 
+
+    if (!file.is_open()) {
+        cout << "[錯誤] 無法開啟檔案: " << fullPath << "，請確認檔案存在於 data/ 資料夾中。" << endl;
+        return;
+    }
+
+    streamsize size = file.tellg();
+    file.seekg(0, ios::beg);
+
+    vector<char> buffer(size);
+    if (file.read(buffer.data(), size)) {
+        auto start = chrono::high_resolution_clock::now();
+
+        sha.update(reinterpret_cast<const uint8_t*>(buffer.data()), size);
+        std::array<uint8_t, 32> digest = sha.digest();
+
+        auto end = chrono::high_resolution_clock::now();
+        chrono::duration<double, milli> elapsed = end - start;
+
+        cout << "\n--- SHA-256 完整性檢查結果 ---" << endl;
+        cout << "檔案名稱: " << filePath << endl;
+        cout << "檔案大小: " << size << " bytes" << endl;
+        cout << "雜湊值  : " << SHA256::toString(digest) << endl;
+        cout << "運算耗時: " << elapsed.count() << " ms" << endl;
+        cout << "------------------------------" << endl;
+    }
 }
 
 // --- 功能：儲存 RSA 金鑰 (支援自訂檔名) ---
@@ -102,7 +138,8 @@ int main() {
         cout << "2. 載入 RSA 金鑰 (手動選擇)" << endl;
         cout << "3. 加密檔案 (Sender)" << endl;
         cout << "4. 解密檔案 (Receiver)" << endl;
-        cout << "5. 離開" << endl;
+        cout << "5. 檔案雜湊驗證 (SHA-256)" << endl;  // <-- 新增選單
+        cout << "6. 離開" << endl;                    // <-- 選項順延
         cout << "============================================" << endl;
         cout << "請輸入選項: ";
 
@@ -116,7 +153,6 @@ int main() {
             cout << "(直接按 Enter 則使用預設值: " << DEFAULT_KEY_FILE << "): ";
             getline(cin, customName);
 
-            // 修改點：判斷是否為空，若空則用預設值
             if (customName.empty()) {
                 customName = DEFAULT_KEY_FILE;
             }
@@ -125,7 +161,7 @@ int main() {
             try {
                 globalRSAKey = rsa_keygen(1024);
                 hasKey = true;
-                saveRSAKey(customName); // 傳入檔名
+                saveRSAKey(customName);
             } catch (const exception& e) {
                 cerr << "[失敗] " << e.what() << endl;
             }
@@ -232,7 +268,20 @@ int main() {
             }
             pause();
         }
-        else if (choice == '5') break;
+        else if (choice == '5') { // <-- 新增的 case 邏輯
+            string hashFileTarget;
+            cout << "\n--- 檔案完整性校驗 (SHA-256) ---" << endl;
+            while(true) {
+                cout << "請輸入檔案名稱 (輸入 ? 查詢 " << DATA_DIR << "): ";
+                getline(cin, hashFileTarget);
+                if (hashFileTarget == "?") { listDataFiles(); continue; }
+                if (fs::exists(DATA_DIR + hashFileTarget)) break;
+                cout << "[錯誤] 找不到檔案，請重試。" << endl;
+            }
+            hashFile(hashFileTarget);
+            pause();
+        }
+        else if (choice == '6') break; // 順延
     }
     return 0;
 }

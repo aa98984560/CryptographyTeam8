@@ -66,7 +66,7 @@ int main() {
 }
 
 編譯時用mingw64:
-g++ -std=c++17 你的檔案名稱.cpp modules/rsa.cpp modules/serpent.cpp -lgmpxx -lgmp -o 輸出檔案名稱.exe (編譯時需執行rsa.cpp，rsa功能實作在裡面)
+g++ -std=c++17 main.cpp modules/rsa.cpp modules/serpent.cpp modules/SHA256.cpp -lgmpxx -lgmp -o 輸出檔案名稱.exe
 ______________________________________________________________________________________________________________
 
 serpent對稱加密使用範例:
